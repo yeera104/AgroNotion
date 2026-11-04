@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AgroNotion</title>
+<style>
+:root{--bg:#f6f4ec;--card:#fff;--tx:#1f2a1f;--mut:#6b756b;--ac:#2f7d32;--acx:#fff;--bd:#e2dfd2;--bad:#b3261e;--warn:#a15c00;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141a14;--card:#1d261d;--tx:#e8efe6;--mut:#9aa89a;--ac:#6fcf73;--acx:#0d1a0d;--bd:#2c382c;--bad:#ff8a80;--warn:#ffb74d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141a14;--card:#1d261d;--tx:#e8efe6;--mut:#9aa89a;--ac:#6fcf73;--acx:#0d1a0d;--bd:#2c382c;--bad:#ff8a80;--warn:#ffb74d;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.w{max-width:720px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 12px}h2{font-size:17px;margin:20px 0 8px}
+nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+nav button{flex:1;white-space:nowrap;padding:10px 12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;font:inherit;cursor:pointer}
+nav button.on{background:var(--ac);color:var(--acx);border-color:var(--ac)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin:8px 0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mut{color:var(--mut);font-size:14px}.bad{color:var(--bad)}.warn{color:var(--warn)}.ok{color:var(--ac)}
+form{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+form .full{grid-column:1/-1}
+label{display:flex;flex-direction:column;font-size:13px;color:var(--mut);gap:3px}
+input,select{font:inherit;padding:9px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);width:100%}
+.btn{padding:10px 14px;border:0;border-radius:8px;background:var(--ac);color:var(--acx);font:inherit;font-weight:600;cursor:pointer}
+.ghost{background:none;color:var(--mut);border:1px solid var(--bd);padding:6px 10px;border-radius:8px;cursor:pointer;font:inherit}
+.banner{border-left:4px solid var(--warn);padding:10px 12px;background:var(--card);border-radius:8px;margin:8px 0}
+.tot{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.tot b{display:block;font-size:18px}
+.wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px;border-bottom:1px solid var(--bd);text-align:left}
+</style></head><body><div class="w">
+<h1>🌱 AgroNotion</h1>
+<nav id="nav"></nav>
+<div id="app"></div>
+<p class="mut" style="margin-top:24px">Данные хранятся только в вашем браузере на этом устройстве.</p>
+</div>
+<script>
+const K='agronotion-v1';
+let S={plots:[],tasks:[],fin:[]},tab='tasks';
+try{const r=localStorage.getItem(K);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const today=()=>iso(new Date());
+const addDays=(s,n)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return iso(d)};
+const diff=s=>Math.round((new Date(s+'T12:00:00')-new Date(today()+'T12:00:00'))/864e5);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const pn=id=>{const p=S.plots.find(p=>p.id===id);return p?p.name:'Без участка'};
+const fd=s=>s.split('-').reverse().join('.');
+const money=n=>n.toLocaleString('ru-RU',{maximumFractionDigits:0});
+const TYPES=['Обработка от болезней','Опрыскивание от вредителей','Полив','Подкормка','Прополка','Посев / посадка','Сбор урожая','Другое'];
+const plotOpts=()=>'<option value="">Без участка</option>'+S.plots.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+const when=d=>d<0?`<span class="bad">просрочено на ${-d} дн.</span>`:d===0?'<span class="warn">сегодня</span>':d===1?'завтра':`через ${d} дн.`;
+
+function vTasks(){
+  const open=S.tasks.filter(t=>!t.done).sort((a,b)=>a.date.localeCompare(b.date));
+  const over=open.filter(t=>diff(t.date)<0).length, now=open.filter(t=>diff(t.date)===0).length;
+  const done=S.tasks.filter(t=>t.done).slice(-5).reverse();
+  let h='';
+  if(over||now)h+=`<div class="banner">${now?`Сегодня дел: <b>${now}</b>. `:''}${over?`<span class="bad">Просрочено: <b>${over}</b></span>`:''}</div>`;
+  h+=`<h2>Новая работа</h2><div class="card"><form onsubmit="addTask(event)">
+  <label>Работа<select name="type">${TYPES.map(t=>`<option>${t}</option>`).join('')}</select></label>
+  <label>Участок<select name="plot">${plotOpts()}</select></label>
+  <label>Дата<input type="date" name="date" value="${today()}" required></label>
+  <label>Повторять каждые N дней (0 — не повторять)<input type="number" name="every" min="0" value="0"></label>
+  <label class="full">Заметка (препарат, доза)<input name="note" placeholder="Например: Ридомил, 25 г на 10 л"></label>
+  <button class="btn full">Добавить</button></form></div><h2>Предстоящие работы</h2>`;
+  h+=open.length?open.map(t=>`<div class="card row"><div><b>${esc(t.type)}</b> · ${esc(pn(t.plot))}<br><span class="mut">${fd(t.date)} · ${when(diff(t.date))}${t.every?` · повтор каждые ${t.every} дн.`:''}${t.note?`<br>${esc(t.note)}`:''}</span></div>
+  <div style="display:flex;gap:6px"><button class="btn" onclick="doneTask('${t.id}')">Готово</button><button class="ghost" onclick="del('tasks','${t.id}')">×</button></div></div>`).join(''):'<p class="mut">Пока нет запланированных работ.</p>';
+  if(done.length)h+='<h2>Недавно выполнено</h2>'+done.map(t=>`<div class="card mut">✓ ${esc(t.type)} · ${esc(pn(t.plot))} · ${fd(t.doneOn)}</div>`).join('');
+  return h;
+}
+function vPlots(){
+  let h=`<h2>Новый участок / грядка</h2><div class="card"><form onsubmit="addPlot(event)">
+  <label>Название<input name="name" placeholder="Теплица, грядка 1…" required></label>
+  <label>Культура<input name="crop" placeholder="Томаты, картофель…"></label>
+  <label class="full">Дата посадки<input type="date" name="date" value="${today()}"></label>
+  <button class="btn full">Добавить</button></form></div><h2>Мои участки</h2>`;
+  h+=S.plots.length?S.plots.map(p=>{const age=-diff(p.date);return `<div class="card row"><div><b>${esc(p.name)}</b> · ${esc(p.crop||'—')}<br><span class="mut">Посажено ${fd(p.date)}${age>=0?` (${age} дн. назад)`:''}</span></div><button class="ghost" onclick="del('plots','${p.id}')">×</button></div>`}).join(''):'<p class="mut">Добавьте первый участок.</p>';
+  return h;
+}
+function vFin(){
+  const inc=S.fin.filter(f=>f.kind==='in').reduce((a,f)=>a+f.sum,0), exp=S.fin.filter(f=>f.kind==='out').reduce((a,f)=>a+f.sum,0);
+  const ids=[...new Set(S.fin.map(f=>f.plot))];
+  let h=`<h2>Итого</h2><div class="card tot"><div>Доходы<b class="ok">${money(inc)}</b></div><div>Расходы<b class="bad">${money(exp)}</b></div><div>Баланс<b>${money(inc-exp)}</b></div></div>
+  <h2>Новая запись</h2><div class="card"><form onsubmit="addFin(event)">
+  <label>Тип<select name="kind"><option value="out">Расход</option><option value="in">Доход</option></select></label>
+  <label>Участок<select name="plot">${plotOpts()}</select></label>
+  <label>Категория<input name="cat" placeholder="Семена, удобрения, продажа…"></label>
+  <label>Сумма<input type="number" name="sum" min="0" step="any" required></label>
+  <label class="full">Дата<input type="date" name="date" value="${today()}"></label>
+  <button class="btn full">Добавить</button></form></div>`;
+  if(ids.length)h+=`<h2>По участкам</h2><div class="card wrap"><table><tr><th>Участок</th><th>Доход</th><th>Расход</th><th>Итог</th></tr>${ids.map(id=>{const i=S.fin.filter(f=>f.plot===id&&f.kind==='in').reduce((a,f)=>a+f.sum,0),o=S.fin.filter(f=>f.plot===id&&f.kind==='out').reduce((a,f)=>a+f.sum,0);return `<tr><td>${esc(pn(id))}</td><td>${money(i)}</td><td>${money(o)}</td><td><b>${money(i-o)}</b></td></tr>`}).join('')}</table></div>`;
+  h+='<h2>Последние записи</h2>';
+  h+=S.fin.length?[...S.fin].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,15).map(f=>`<div class="card row"><div>${f.kind==='in'?'<span class="ok">+':'<span class="bad">−'}${money(f.sum)}</span> · ${esc(f.cat||'Без категории')}<br><span class="mut">${esc(pn(f.plot))} · ${fd(f.date)}</span></div><button class="ghost" onclick="del('fin','${f.id}')">×</button></div>`).join(''):'<p class="mut">Записей пока нет.</p>';
+  return h;
+}
+function vWeather(){
+  return `<h2>Агро-проверка погоды</h2><p class="mut">Введите прогноз на ближайшие сутки. Автоматический прогноз по вашему месту подключим на следующем этапе.</p>
+  <div class="card"><form onsubmit="calcW(event)">
+  <label>Мин. температура ночью, °C<input type="number" name="tmin" step="any" required></label>
+  <label>Макс. температура днем, °C<input type="number" name="tmax" step="any" required></label>
+  <label>Ветер, м/с<input type="number" name="wind" step="any" min="0" value="2" required></label>
+  <label>Дождь в ближайшие 12 ч<select name="rain"><option value="0">Нет</option><option value="1">Да</option></select></label>
+  <button class="btn full">Проверить</button></form></div><div id="wout"></div>`;
+}
+function calcW(e){
+  e.preventDefault();const f=e.target.elements;
+  const tmin=+f.tmin.value,tmax=+f.tmax.value,wind=+f.wind.value,rain=f.rain.value==='1',out=[];
+  if(tmin<=0)out.push(['bad','❄️ Заморозок. Укройте рассаду и цветущие культуры, полейте вечером.']);
+  else if(tmin<=3)out.push(['warn','🌡️ Риск заморозка в низинах. Подготовьте укрывной материал.']);
+  else out.push(['ok','✅ Заморозков не ожидается.']);
+  if(!rain&&wind<=3&&tmax>=10&&tmax<=25)out.push(['ok','💨 Хороший день для опрыскивания: без дождя, слабый ветер, умеренная температура.']);
+  else out.push(['warn','⚠️ Опрыскивание не рекомендуется: '+[rain&&'ожидается дождь',wind>3&&'сильный ветер',tmax>25&&'жарко (выше 25 °C)',tmax<10&&'холодно (ниже 10 °C)'].filter(Boolean).join(', ')+'.']);
+  if(tmax>=28)out.push(['warn','💧 Жара: поливайте рано утром или вечером, мульчируйте грядки.']);
+  if(rain)out.push(['ok','🌧️ Дождь: полив можно пропустить.']);
+  $('#wout').innerHTML=out.map(o=>`<div class="banner ${o[0]}" style="border-left-color:currentColor">${o[1]}</div>`).join('');
+}
+function addTask(e){e.preventDefault();const f=e.target.elements;S.tasks.push({id:uid(),type:f.type.value,plot:f.plot.value,date:f.date.value,every:+f.every.value||0,note:f.note.value.trim(),done:false});save();render()}
+function doneTask(id){const t=S.tasks.find(t=>t.id===id);if(!t)return;t.done=true;t.doneOn=today();if(t.every>0)S.tasks.push({...t,id:uid(),date:addDays(today(),t.every),done:false,doneOn:undefined});save();render()}
+function addPlot(e){e.preventDefault();const f=e.target.elements;S.plots.push({id:uid(),name:f.name.value.trim(),crop:f.crop.value.trim(),date:f.date.value||today()});save();render()}
+function addFin(e){e.preventDefault();const f=e.target.elements;S.fin.push({id:uid(),kind:f.kind.value,plot:f.plot.value,cat:f.cat.value.trim(),sum:+f.sum.value||0,date:f.date.value||today()});save();render()}
+function del(k,id){S[k]=S[k].filter(x=>x.id!==id);save();render()}
+function go(t){tab=t;render()}
+const TABS=[['tasks','Работы'],['plots','Участки'],['fin','Финансы'],['weather','Погода']];
+function render(){
+  $('#nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="go('${t[0]}')">${t[1]}</button>`).join('');
+  $('#app').innerHTML={tasks:vTasks,plots:vPlots,fin:vFin,weather:vWeather}[tab]();
+}
+render();
+</script></body></html>
