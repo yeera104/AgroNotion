@@ -53,12 +53,31 @@ form{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
 footer{border-top:1px solid var(--line);padding:28px 0;color:var(--mut);font-size:14px}
 [data-reveal]{opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s}[data-reveal].in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.hl{background-size:100% .36em}[data-reveal]{opacity:1;transform:none}}
+
+/* ===== Приложение: стили раздела #tool ===== */
+#tool nav{flex-wrap:nowrap;gap:0;overflow-x:auto;border-bottom:1.5px solid var(--line);margin:24px 0 0}
+#tool nav button{flex:none;background:none;border:0;padding:12px 18px;font:600 15px var(--sans);color:var(--mut);cursor:pointer;transition:color .2s,box-shadow .3s}
+#tool nav button:hover{color:var(--ink)}#tool nav button.on{color:var(--ink);box-shadow:inset 0 -3px 0 var(--hl)}
+#tool h3{font:700 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:28px 0 10px}
+#tool .card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px;margin:8px 0}
+#tool .row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+#tool .card.row{transition:transform .2s}#tool .card.row:hover{transform:translateY(-2px)}
+#tool .mut{color:var(--mut);font-size:14px}#tool .bad{color:var(--alert)}#tool .ok{color:#0a9f55}#tool .warn{color:#b86a00}
+#tool form{display:grid;grid-template-columns:1fr 1fr;gap:10px}#tool .full{grid-column:1/-1}
+#tool input,#tool select{width:100%}
+#tool select{-webkit-appearance:none;appearance:none;padding-right:40px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237f9a8a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;background-size:12px 8px}
+#tool .ghost{background:none;border:1.5px solid var(--line);color:var(--mut);border-radius:999px;padding:6px 14px;font:inherit;cursor:pointer;transition:all .2s}#tool .ghost:hover{color:var(--bg);background:var(--ink);border-color:var(--ink)}
+#tool .banner{border-left:4px solid var(--hl);padding:12px 16px;background:var(--card);border-radius:4px;margin:8px 0}
+#tool .tot{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}#tool .tot b{display:block;font:300 30px var(--sans)}
+#tool .tw{overflow-x:auto}#tool table{width:100%;border-collapse:collapse;font-size:14px}#tool td,#tool th{padding:6px;border-bottom:1px solid var(--line);text-align:left}
+#app.pg>*{animation:fade .4s ease both}
+@media (max-width:560px){#tool form{grid-template-columns:1fr}}
 </style></head><body>
 
 <!-- COMPONENT: site-header -->
 <header><div class="wrap">
   <a class="brand" href="#hero">Agro<b>Notion</b></a>
-  <nav aria-label="Разделы страницы"><a href="#notebook">Блокнот</a><a href="#season">Сезон</a><a href="#start">Старт</a><a href="#next">Что дальше</a></nav>
+  <nav aria-label="Разделы страницы"><a href="#notebook">Блокнот</a><a href="#season">Сезон</a><a href="#start">Старт</a><a href="#next">Что дальше</a><a href="#tool">Приложение</a></nav>
   <!-- API-СТЫК (личный кабинет): заменить на ссылку «Войти», когда появится авторизация -->
   <a class="btn alt" data-app href="#">Открыть приложение</a>
 </div></header>
@@ -141,16 +160,24 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--mut);font-siz
   <p class="lab">В разработке</p>
   <h2>Что <span class="hl">дальше</span></h2>
   <div class="plans">
-    <article><h3>Напоминания в Telegram</h3><p>[СРОК — ВСТАВИТЬ]</p></article>
     <article><h3>Синхронизация между устройствами</h3><p>[СРОК — ВСТАВИТЬ]</p></article>
     <article><h3>Автоматический прогноз по вашему участку</h3><p>[СРОК — ВСТАВИТЬ]</p></article>
   </div>
   <h3>Сообщить, когда это появится</h3>
   <form id="lead" novalidate>
-    <label>Telegram или почта<input name="contact" required placeholder="@имя или адрес почты"></label>
-    <button class="btn" type="submit">Оставить контакт</button>
+    <label>Почта<input name="contact" type="email" required placeholder="адрес почты"></label>
+    <button class="btn" type="submit">Оставить почту</button>
   </form>
   <p class="out" id="lead-out" aria-live="polite"></p>
+</div></section>
+
+<!-- COMPONENT: tool (рабочее приложение) -->
+<section id="tool"><div class="wrap">
+  <p class="lab">Приложение</p>
+  <h2>Рабочая тетрадь <span class="hl">огородника</span></h2>
+  <nav id="nav" aria-label="Разделы приложения"></nav>
+  <div id="app"></div>
+  <p class="lab" id="sync-note">Данные хранятся в этом браузере.</p>
 </div></section>
 </main>
 
@@ -160,7 +187,7 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--mut);font-siz
 <script>
 /* ===== Конфигурация и API-стыки ===== */
 const CONFIG={
-  APP_URL:'https://claude.ai/artifact/F1pRHAhT8ppM66ptbHozBt', // приложение; ссылка станет публичной только после «Поделиться»
+  APP_URL:'#tool', // приложение — раздел этой же страницы
   API:{leads:null /* [ВСТАВИТЬ URL CRM/формы] */, auth:null /* личный кабинет */, pricing:null /* калькулятор */}
 };
 const Api={
@@ -213,12 +240,133 @@ const LeadForm={init(){
   const f=$('#lead'),o=$('#lead-out');
   f.addEventListener('submit',async e=>{e.preventDefault();
     const contact=f.contact.value.trim();
-    if(!contact){o.textContent='Укажите Telegram или почту.';return}
+    if(!contact){o.textContent='Укажите почту.';return}
     const r=await Api.submitLead({contact,source:'landing'});
     o.textContent=r.demo?'Демо-режим: форма пока не подключена к CRM, контакт не отправлен.':r.ok?'Спасибо, контакт принят.':'Не удалось отправить, попробуйте позже.';
   });
 }};
 
 [Links,Reveal,Tabs,Reminder,FrostCheck,LeadForm].forEach(m=>m.init());
+</script>
+<script>
+/* ===== Модуль: приложение (изолировано от кода лендинга) ===== */
+(function(){
+
+const K='agronotion-v1';
+let S={plots:[],tasks:[],fin:[]},tab='tasks';
+try{const r=localStorage.getItem(K);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+let cloud=null,timer=null;
+const note=s=>{const n=$('#sync-note');if(n)n.textContent=s};
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}
+  /* API-СТЫК (БД): запись в личное хранилище аккаунта; с задержкой, чтобы не писать на каждый символ */
+  if(cloud){clearTimeout(timer);timer=setTimeout(()=>cloud.set({json:JSON.stringify(S)}).catch(()=>{}),800)}};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const today=()=>iso(new Date());
+const addDays=(s,n)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return iso(d)};
+const diff=s=>Math.round((new Date(s+'T12:00:00')-new Date(today()+'T12:00:00'))/864e5);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const pn=id=>{const p=S.plots.find(p=>p.id===id);return p?p.name:'Без участка'};
+const fd=s=>s.split('-').reverse().join('.');
+const money=n=>n.toLocaleString('ru-RU',{maximumFractionDigits:0});
+const TYPES=['Обработка от болезней','Опрыскивание от вредителей','Полив','Подкормка','Прополка','Посев / посадка','Сбор урожая','Другое'];
+const plotOpts=()=>'<option value="">Без участка</option>'+S.plots.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+const when=d=>d<0?`<span class="bad">просрочено на ${-d} дн.</span>`:d===0?'<span class="warn">сегодня</span>':d===1?'завтра':`через ${d} дн.`;
+
+function vTasks(){
+  const open=S.tasks.filter(t=>!t.done).sort((a,b)=>a.date.localeCompare(b.date));
+  const over=open.filter(t=>diff(t.date)<0).length, now=open.filter(t=>diff(t.date)===0).length;
+  const done=S.tasks.filter(t=>t.done).slice(-5).reverse();
+  let h='';
+  if(over||now)h+=`<div class="banner">${now?`Сегодня дел: <b>${now}</b>. `:''}${over?`<span class="bad">Просрочено: <b>${over}</b></span>`:''}</div>`;
+  h+=`<h3>Новая работа</h3><div class="card"><form onsubmit="addTask(event)">
+  <label>Работа<select name="type">${TYPES.map(t=>`<option>${t}</option>`).join('')}</select></label>
+  <label>Участок<select name="plot">${plotOpts()}</select></label>
+  <label>Дата<input type="date" name="date" value="${today()}" required></label>
+  <label>Повторять каждые N дней (0 — не повторять)<input type="number" name="every" min="0" value="0"></label>
+  <label class="full">Заметка (препарат, доза)<input name="note" placeholder="Например: Ридомил, 25 г на 10 л"></label>
+  <button class="btn full">Добавить</button></form></div><h3>Предстоящие работы</h3>`;
+  h+=open.length?open.map(t=>`<div class="card row"><div><b>${esc(t.type)}</b> · ${esc(pn(t.plot))}<br><span class="mut">${fd(t.date)} · ${when(diff(t.date))}${t.every?` · повтор каждые ${t.every} дн.`:''}${t.note?`<br>${esc(t.note)}`:''}</span></div>
+  <div style="display:flex;gap:6px"><button class="btn" onclick="doneTask('${t.id}')">Готово</button><button class="ghost" onclick="del('tasks','${t.id}')">×</button></div></div>`).join(''):'<p class="mut">Пока нет запланированных работ.</p>';
+  if(done.length)h+='<h3>Недавно выполнено</h3>'+done.map(t=>`<div class="card mut">Выполнено: ${esc(t.type)} · ${esc(pn(t.plot))} · ${fd(t.doneOn)}</div>`).join('');
+  return h;
+}
+function vPlots(){
+  let h=`<h3>Новый участок / грядка</h3><div class="card"><form onsubmit="addPlot(event)">
+  <label>Название<input name="name" placeholder="Теплица, грядка 1…" required></label>
+  <label>Культура<input name="crop" placeholder="Томаты, картофель…"></label>
+  <label class="full">Дата посадки<input type="date" name="date" value="${today()}"></label>
+  <button class="btn full">Добавить</button></form></div><h3>Мои участки</h3>`;
+  h+=S.plots.length?S.plots.map(p=>{const age=-diff(p.date);return `<div class="card row"><div><b>${esc(p.name)}</b> · ${esc(p.crop||'—')}<br><span class="mut">Посажено ${fd(p.date)}${age>=0?` (${age} дн. назад)`:''}</span></div><button class="ghost" onclick="del('plots','${p.id}')">×</button></div>`}).join(''):'<p class="mut">Добавьте первый участок.</p>';
+  return h;
+}
+function vFin(){
+  const inc=S.fin.filter(f=>f.kind==='in').reduce((a,f)=>a+f.sum,0), exp=S.fin.filter(f=>f.kind==='out').reduce((a,f)=>a+f.sum,0);
+  const ids=[...new Set(S.fin.map(f=>f.plot))];
+  let h=`<h3>Итого</h3><div class="card tot"><div>Доходы<b class="ok">${money(inc)}</b></div><div>Расходы<b class="bad">${money(exp)}</b></div><div>Баланс<b>${money(inc-exp)}</b></div></div>
+  <h3>Новая запись</h3><div class="card"><form onsubmit="addFin(event)">
+  <label>Тип<select name="kind"><option value="out">Расход</option><option value="in">Доход</option></select></label>
+  <label>Участок<select name="plot">${plotOpts()}</select></label>
+  <label>Категория<input name="cat" placeholder="Семена, удобрения, продажа…"></label>
+  <label>Сумма<input type="number" name="sum" min="0" step="any" required></label>
+  <label class="full">Дата<input type="date" name="date" value="${today()}"></label>
+  <button class="btn full">Добавить</button></form></div>`;
+  if(ids.length)h+=`<h3>По участкам</h3><div class="card tw"><table><tr><th>Участок</th><th>Доход</th><th>Расход</th><th>Итог</th></tr>${ids.map(id=>{const i=S.fin.filter(f=>f.plot===id&&f.kind==='in').reduce((a,f)=>a+f.sum,0),o=S.fin.filter(f=>f.plot===id&&f.kind==='out').reduce((a,f)=>a+f.sum,0);return `<tr><td>${esc(pn(id))}</td><td>${money(i)}</td><td>${money(o)}</td><td><b>${money(i-o)}</b></td></tr>`}).join('')}</table></div>`;
+  h+='<h3>Последние записи</h3>';
+  h+=S.fin.length?[...S.fin].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,15).map(f=>`<div class="card row"><div>${f.kind==='in'?'<span class="ok">+':'<span class="bad">−'}${money(f.sum)}</span> · ${esc(f.cat||'Без категории')}<br><span class="mut">${esc(pn(f.plot))} · ${fd(f.date)}</span></div><button class="ghost" onclick="del('fin','${f.id}')">×</button></div>`).join(''):'<p class="mut">Записей пока нет.</p>';
+  return h;
+}
+function vWeather(){
+  return `<h3>Агро-проверка погоды</h3><p class="mut">Введите прогноз на ближайшие сутки. Автоматический прогноз по вашему месту подключим на следующем этапе.</p>
+  <div class="card"><form onsubmit="calcW(event)">
+  <label>Мин. температура ночью, °C<input type="number" name="tmin" step="any" required></label>
+  <label>Макс. температура днем, °C<input type="number" name="tmax" step="any" required></label>
+  <label>Ветер, м/с<input type="number" name="wind" step="any" min="0" value="2" required></label>
+  <label>Дождь в ближайшие 12 ч<select name="rain"><option value="0">Нет</option><option value="1">Да</option></select></label>
+  <button class="btn full">Проверить</button></form></div><div id="wout"></div>`;
+}
+function calcW(e){
+  e.preventDefault();const f=e.target.elements;
+  const tmin=+f.tmin.value,tmax=+f.tmax.value,wind=+f.wind.value,rain=f.rain.value==='1',out=[];
+  if(tmin<=0)out.push(['bad','❄️ Заморозок. Укройте рассаду и цветущие культуры, полейте вечером.']);
+  else if(tmin<=3)out.push(['warn','🌡️ Риск заморозка в низинах. Подготовьте укрывной материал.']);
+  else out.push(['ok','✅ Заморозков не ожидается.']);
+  if(!rain&&wind<=3&&tmax>=10&&tmax<=25)out.push(['ok','💨 Хороший день для опрыскивания: без дождя, слабый ветер, умеренная температура.']);
+  else out.push(['warn','⚠️ Опрыскивание не рекомендуется: '+[rain&&'ожидается дождь',wind>3&&'сильный ветер',tmax>25&&'жарко (выше 25 °C)',tmax<10&&'холодно (ниже 10 °C)'].filter(Boolean).join(', ')+'.']);
+  if(tmax>=28)out.push(['warn','💧 Жара: поливайте рано утром или вечером, мульчируйте грядки.']);
+  if(rain)out.push(['ok','🌧️ Дождь: полив можно пропустить.']);
+  $('#wout').innerHTML=out.map(o=>`<div class="banner ${o[0]}" style="border-left-color:currentColor"><b>${{ok:'Благоприятно',warn:'Внимание',bad:'Опасность'}[o[0]]}.</b> ${o[1].replace(/^\S+\s/,'')}</div>`).join('');
+}
+function addTask(e){e.preventDefault();const f=e.target.elements;S.tasks.push({id:uid(),type:f.type.value,plot:f.plot.value,date:f.date.value,every:+f.every.value||0,note:f.note.value.trim(),done:false});save();render()}
+function doneTask(id){const t=S.tasks.find(t=>t.id===id);if(!t)return;t.done=true;t.doneOn=today();if(t.every>0)S.tasks.push({...t,id:uid(),date:addDays(today(),t.every),done:false,doneOn:undefined});save();render()}
+function addPlot(e){e.preventDefault();const f=e.target.elements;S.plots.push({id:uid(),name:f.name.value.trim(),crop:f.crop.value.trim(),date:f.date.value||today()});save();render()}
+function addFin(e){e.preventDefault();const f=e.target.elements;S.fin.push({id:uid(),kind:f.kind.value,plot:f.plot.value,cat:f.cat.value.trim(),sum:+f.sum.value||0,date:f.date.value||today()});save();render()}
+function del(k,id){S[k]=S[k].filter(x=>x.id!==id);save();render()}
+let anim=false;
+function go(t){tab=t;anim=true;render()}
+const TABS=[['tasks','Календарь работ'],['plots','Участки'],['fin','Учет финансов'],['weather','Агропрогноз']];
+function render(){
+  $('#nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="go('${t[0]}')">${t[1]}</button>`).join('');
+  const a=$('#app');a.classList.remove('pg');a.innerHTML={tasks:vTasks,plots:vPlots,fin:vFin,weather:vWeather}[tab]();if(anim){void a.offsetWidth;a.classList.add('pg')}anim=false;
+}
+render();
+
+(async()=>{ /* API-СТЫК (БД): личное хранилище аккаунта claude.ai; для остальных посетителей недоступно, остается localStorage */
+  try{
+    if(!window.claude)return;
+    const [db,u]=await Promise.all([claude.use('db'),claude.use('user')]);
+    if(!db||!u)return;
+    const id=await u.id();if(!id)return;
+    const ref=db.doc('data/users/'+id+'/state');
+    const snap=await ref.get();
+    const d=snap.exists?snap.data():null;
+    if(d&&d.json){S=Object.assign({plots:[],tasks:[],fin:[]},JSON.parse(d.json));try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
+    cloud=ref;if(!d)save();
+    render();note('Данные сохраняются в вашем аккаунте claude.ai.');
+  }catch(e){}
+})();
+Object.assign(window,{go,doneTask,del,addTask,addPlot,addFin,calcW});
+})();
 </script>
 </body></html>
