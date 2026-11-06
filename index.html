@@ -325,7 +325,7 @@ render();
     const d=snap.exists?snap.data():null;
     if(d&&d.json){S=Object.assign({plots:[],tasks:[],fin:[]},JSON.parse(d.json));try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
     cloud=ref;if(!d)save();
-    render();note('Данные сохраняются в вашем аккаунте claude.ai.');
+    render();note('');
   }catch(e){}
 })();
 Object.assign(window,{go,doneTask,del,addTask,addPlot,addFin,calcW});
