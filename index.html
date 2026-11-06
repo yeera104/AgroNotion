@@ -77,8 +77,7 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--mut);font-siz
 <!-- COMPONENT: site-header -->
 <header><div class="wrap">
   <a class="brand" href="#hero">Agro<b>Notion</b></a>
-  <nav aria-label="Разделы страницы"><a href="#notebook">Блокнот</a><a href="#season">Сезон</a><a href="#start">Старт</a><a href="#next">Что дальше</a><a href="#tool">Приложение</a></nav>
-  <!-- API-СТЫК (личный кабинет): заменить на ссылку «Войти», когда появится авторизация -->
+  <nav aria-label="Разделы страницы"><a href="#notebook">Блокнот</a><a href="#season">Сезон</a><a href="#start">Старт</a><a href="#tool">Приложение</a></nav>
   <a class="btn alt" data-app href="#">Открыть приложение</a>
 </div></header>
 
@@ -138,7 +137,6 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--mut);font-siz
     <h3>К осени не понять, что выгодно сажать</h3>
     <h4>Как это закрывает AgroNotion</h4>
     <p>Каждый расход и доход привязан к участку. В итоге видно баланс по всему хозяйству и по каждой грядке отдельно.</p>
-    <!-- API-СТЫК (калькулятор стоимости/рентабельности): здесь подключить расчет по данным участков -->
   </article>
 </div></section>
 
@@ -155,22 +153,6 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--mut);font-siz
   <p class="lab">Данные хранятся в вашем браузере, на другие устройства пока не синхронизируются.</p>
 </div></section>
 
-<!-- COMPONENT: roadmap + lead-form -->
-<section id="next"><div class="wrap" data-reveal>
-  <p class="lab">В разработке</p>
-  <h2>Что <span class="hl">дальше</span></h2>
-  <div class="plans">
-    <article><h3>Синхронизация между устройствами</h3><p>[СРОК — ВСТАВИТЬ]</p></article>
-    <article><h3>Автоматический прогноз по вашему участку</h3><p>[СРОК — ВСТАВИТЬ]</p></article>
-  </div>
-  <h3>Сообщить, когда это появится</h3>
-  <form id="lead" novalidate>
-    <label>Почта<input name="contact" type="email" required placeholder="адрес почты"></label>
-    <button class="btn" type="submit">Оставить почту</button>
-  </form>
-  <p class="out" id="lead-out" aria-live="polite"></p>
-</div></section>
-
 <!-- COMPONENT: tool (рабочее приложение) -->
 <section id="tool"><div class="wrap">
   <p class="lab">Приложение</p>
@@ -182,22 +164,12 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--mut);font-siz
 </main>
 
 <!-- COMPONENT: site-footer -->
-<footer><div class="wrap">AgroNotion · [КОНТАКТ ДЛЯ СВЯЗИ] · [ЮРИДИЧЕСКАЯ ИНФОРМАЦИЯ]</div></footer>
+<footer><div class="wrap">AgroNotion</div></footer>
 
 <script>
 /* ===== Конфигурация и API-стыки ===== */
 const CONFIG={
   APP_URL:'#tool', // приложение — раздел этой же страницы
-  API:{leads:null /* [ВСТАВИТЬ URL CRM/формы] */, auth:null /* личный кабинет */, pricing:null /* калькулятор */}
-};
-const Api={
-  async submitLead(data){
-    /* API-СТЫК (CRM): POST на CONFIG.API.leads. В опубликованной странице сетевые запросы наружу заблокированы,
-       заработает только на собственном хостинге. */
-    if(!CONFIG.API.leads){console.info('lead (demo):',data);return{ok:false,demo:true}}
-    const r=await fetch(CONFIG.API.leads,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-    return{ok:r.ok};
-  }
 };
 const $=s=>document.querySelector(s);
 
@@ -236,17 +208,7 @@ const FrostCheck={init(){ /* пороги совпадают с приложен
     else{o.textContent='Заморозков не ожидается.';o.className='out'}};
 }};
 
-const LeadForm={init(){
-  const f=$('#lead'),o=$('#lead-out');
-  f.addEventListener('submit',async e=>{e.preventDefault();
-    const contact=f.contact.value.trim();
-    if(!contact){o.textContent='Укажите почту.';return}
-    const r=await Api.submitLead({contact,source:'landing'});
-    o.textContent=r.demo?'Демо-режим: форма пока не подключена к CRM, контакт не отправлен.':r.ok?'Спасибо, контакт принят.':'Не удалось отправить, попробуйте позже.';
-  });
-}};
-
-[Links,Reveal,Tabs,Reminder,FrostCheck,LeadForm].forEach(m=>m.init());
+[Links,Reveal,Tabs,Reminder,FrostCheck].forEach(m=>m.init());
 </script>
 <script>
 /* ===== Модуль: приложение (изолировано от кода лендинга) ===== */
