@@ -5,9 +5,9 @@
 <meta name="description" content="Повторные обработки, проверка заморозков и учет расходов по каждому участку. Работает в браузере, без регистрации.">
 <style>
 /* ===== Дизайн-система: «полевая тетрадь» ===== */
-:root{--bg:#efe9d6;--ink:#10251b;--mut:#5d6b60;--line:#cfc7ae;--card:#f8f4e6;--hl:#19e07a;--alert:#e0361b;--sans:system-ui,-apple-system,"Segoe UI",sans-serif;--mono:ui-monospace,"SF Mono",Consolas,monospace;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#07130d;--ink:#e9f5ec;--mut:#8aa293;--line:#1b3025;--card:#0d1f16;--alert:#ff5a3c;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#07130d;--ink:#e9f5ec;--mut:#8aa293;--line:#1b3025;--card:#0d1f16;--alert:#ff5a3c;color-scheme:dark}
+:root{--bg:#efe9d6;--ink:#10251b;--mut:#5d6b60;--line:#cfc7ae;--card:#f8f4e6;--hl:#19e07a;--alert:#d42a10;--warn:#a35a00;--okc:#07853f;--sans:system-ui,-apple-system,"Segoe UI",sans-serif;--mono:ui-monospace,"SF Mono",Consolas,monospace;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#07130d;--ink:#e9f5ec;--mut:#8aa293;--line:#1b3025;--card:#0d1f16;--alert:#ff6a4d;--warn:#ffb800;--okc:#19e07a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#07130d;--ink:#e9f5ec;--mut:#8aa293;--line:#1b3025;--card:#0d1f16;--alert:#ff6a4d;--warn:#ffb800;--okc:#19e07a;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
@@ -62,7 +62,7 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--mut);font-siz
 #tool .card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px;margin:8px 0}
 #tool .row{display:flex;justify-content:space-between;align-items:center;gap:12px}
 #tool .card.row{transition:transform .2s}#tool .card.row:hover{transform:translateY(-2px)}
-#tool .mut{color:var(--mut);font-size:14px}#tool .bad{color:var(--alert)}#tool .ok{color:#0a9f55}#tool .warn{color:#b86a00}
+#tool .mut{color:var(--mut);font-size:14px}#tool .bad{color:var(--alert)}#tool .ok{color:var(--okc)}#tool .warn{color:var(--warn)}
 #tool form{display:grid;grid-template-columns:1fr 1fr;gap:10px}#tool .full{grid-column:1/-1}
 #tool input,#tool select{width:100%}
 #tool select{-webkit-appearance:none;appearance:none;padding-right:40px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237f9a8a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;background-size:12px 8px}
@@ -72,6 +72,28 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--mut);font-siz
 #tool .tw{overflow-x:auto}#tool table{width:100%;border-collapse:collapse;font-size:14px}#tool td,#tool th{padding:6px;border-bottom:1px solid var(--line);text-align:left}
 #app.pg>*{animation:fade .4s ease both}
 @media (max-width:560px){#tool form{grid-template-columns:1fr}}
+
+/* ===== Приложение как отдельная страница ===== */
+body.app header,body.app main>section:not(#tool),body.app footer{display:none}
+body:not(.app) #tool{display:none}
+#tool{padding:0;min-height:100vh;min-height:100dvh}
+#tool .dash{background:#06251a;color:#fff;padding-bottom:28px;margin-bottom:8px}
+#tool .appbar{display:flex;justify-content:space-between;align-items:center;padding:18px 0 40px}
+#tool .dash .brand{color:#fff}#tool .dash .brand b{color:#19e07a}
+#tool .back{color:#8fb0a0;text-decoration:none;background:linear-gradient(#19e07a,#19e07a) no-repeat 0 100%/0 2px;transition:background-size .3s,color .2s}
+#tool .back:hover{color:#fff;background-size:100% 2px}
+#tool .dash .lab{color:#19e07a;text-transform:capitalize}
+#tool .dash h2{color:#fff;margin-bottom:24px}#tool .dash .hl{background:none;color:#19e07a}
+#tool .sum{display:flex;gap:36px;flex-wrap:wrap}
+#tool .sum span{font:12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#8fb0a0}
+#tool .sum b{display:block;font:300 44px/1.1 var(--sans);letter-spacing:-.03em;color:#fff;animation:pop .5s both}
+#tool .sum .bad b{color:#ff6a4d}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}}
+#tool.enter::before{content:"";position:fixed;inset:0;z-index:50;background:#06251a;pointer-events:none;animation:wipe .7s cubic-bezier(.7,0,.2,1) .25s forwards}
+#tool.enter::after{content:"AgroNotion";position:fixed;inset:0;z-index:51;display:grid;place-items:center;color:#fff;font:300 clamp(40px,10vw,80px) var(--sans);letter-spacing:-.03em;pointer-events:none;animation:wipetxt .7s ease .25s forwards}
+@keyframes wipe{to{transform:translateY(-100%)}}
+@keyframes wipetxt{to{transform:translateY(-100%);opacity:0}}
+@media (prefers-reduced-motion:reduce){#tool.enter::before,#tool.enter::after{display:none}}
 </style></head><body>
 
 <!-- COMPONENT: site-header -->
@@ -150,16 +172,19 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--mut);font-siz
     <li><b>03</b><h3>Поставьте первую работу</h3>Выберите тип и, если нужно, повтор через N дней.</li>
   </ol>
   <p style="margin-top:28px"><a class="btn" data-app href="#">Открыть приложение</a></p>
+  <p class="lab">Данные хранятся в вашем браузере, на другие устройства пока не синхронизируются.</p>
 </div></section>
 
 <!-- COMPONENT: tool (рабочее приложение) -->
-<section id="tool"><div class="wrap">
-  <p class="lab">Приложение</p>
-  <h2>Рабочая тетрадь <span class="hl">огородника</span></h2>
-  <nav id="nav" aria-label="Разделы приложения"></nav>
-  <div id="app"></div>
-  <p class="lab" id="sync-note">Данные хранятся в этом браузере.</p>
-</div></section>
+<section id="tool">
+  <div class="dash"><div class="wrap">
+    <div class="appbar"><a class="brand" href="#hero">Agro<b>Notion</b></a><a class="back" href="#hero">На сайт</a></div>
+    <p class="lab" id="today"></p>
+    <h2>Рабочая тетрадь <span class="hl">огородника</span></h2>
+    <div class="sum" id="sum"></div>
+  </div></div>
+  <div class="wrap"><nav id="nav" aria-label="Разделы приложения"></nav><div id="app"></div></div>
+</section>
 </main>
 
 <!-- COMPONENT: site-footer -->
@@ -207,7 +232,17 @@ const FrostCheck={init(){ /* пороги совпадают с приложен
     else{o.textContent='Заморозков не ожидается.';o.className='out'}};
 }};
 
-[Links,Reveal,Tabs,Reminder,FrostCheck].forEach(m=>m.init());
+const Router={init(){ /* «страницы» внутри одного файла: #tool открывает приложение, любой другой адрес показывает сайт */
+  const show=()=>{
+    const app=location.hash==='#tool',t=$('#tool');
+    document.body.classList.toggle('app',app);
+    t.classList.remove('enter');
+    if(app){void t.offsetWidth;t.classList.add('enter');window.scrollTo({top:0,behavior:'instant'})}
+    else{const el=location.hash.length>1&&document.getElementById(location.hash.slice(1));el?el.scrollIntoView():window.scrollTo({top:0,behavior:'instant'})}
+  };
+  addEventListener('hashchange',show);show();
+}};
+[Links,Reveal,Tabs,Reminder,FrostCheck,Router].forEach(m=>m.init());
 </script>
 <script>
 /* ===== Модуль: приложение (изолировано от кода лендинга) ===== */
@@ -307,7 +342,13 @@ function del(k,id){S[k]=S[k].filter(x=>x.id!==id);save();render()}
 let anim=false;
 function go(t){tab=t;anim=true;render()}
 const TABS=[['tasks','Календарь работ'],['plots','Участки'],['fin','Учет финансов'],['weather','Агропрогноз']];
-function render(){
+function dash(){
+  const open=S.tasks.filter(t=>!t.done),now=open.filter(t=>diff(t.date)===0).length,over=open.filter(t=>diff(t.date)<0).length;
+  const el=$('#sum'),d=$('#today');if(!el)return;
+  el.innerHTML=`<span><b>${now}</b>сегодня</span><span class="${over?'bad':''}"><b>${over}</b>просрочено</span><span><b>${S.plots.length}</b>участков</span>`;
+  d.textContent=new Date().toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
+}
+function render(){dash();
   $('#nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="go('${t[0]}')">${t[1]}</button>`).join('');
   const a=$('#app');a.classList.remove('pg');a.innerHTML={tasks:vTasks,plots:vPlots,fin:vFin,weather:vWeather}[tab]();if(anim){void a.offsetWidth;a.classList.add('pg')}anim=false;
 }
@@ -324,7 +365,7 @@ render();
     const d=snap.exists?snap.data():null;
     if(d&&d.json){S=Object.assign({plots:[],tasks:[],fin:[]},JSON.parse(d.json));try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
     cloud=ref;if(!d)save();
-    render();note('');
+    render();note('Данные сохраняются в вашем аккаунте claude.ai.');
   }catch(e){}
 })();
 Object.assign(window,{go,doneTask,del,addTask,addPlot,addFin,calcW});
